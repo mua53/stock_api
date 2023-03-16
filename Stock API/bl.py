@@ -57,6 +57,33 @@ def get_info_career():
     response = call_api.call_post(url, headers, payload)
     return response
 
+def get_market_price():
+    url = os.getenv('URL_VIETSTOCK') + 'data/getmarketprice'
+    header = {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Accept': '*/*',
+        'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Host': 'finance.vietstock.vn',
+        'Origin': 'https://finance.vietstock.vn',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15',
+        'Connection': 'keep-alive',
+        'Referer': 'https://finance.vietstock.vn/?languageid=1',
+        'Content-Length': '142',
+        'X-Requested-With': 'XMLHttpRequest'
+    }
+    payload = 'type=2&__RequestVerificationToken=QnJ1Dm_vZRFQ3JP9nsKxo5xxSZPMZSOfI-5Gd8B4HrPMReoUe7sp-h78lxGz5hZoWkcnR9NZXjRCRHvy-kmzPJxLGPn1TZdQ1g01aV_BSUA1'
+    response = call_api.call_post(url, header, payload)
+    return response
+
+def get_top_trading():
+    return None
+
+def get_top_effect():
+    return None
+
 def draw_index_career():
     return None
+
+
 

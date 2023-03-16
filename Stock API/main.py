@@ -1,5 +1,6 @@
 from flask import Flask
 import bl
+import logging
 
 app = Flask(__name__)
 
@@ -15,3 +16,7 @@ def get_info_indicator_stock(stockcode):
 def insert_info_career():
     bl.insert_info_career()
     return 'Success'
+
+@app.route('/get_market_price')
+def get_info_market():
+    return None
