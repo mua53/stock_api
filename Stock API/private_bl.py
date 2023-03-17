@@ -1,9 +1,8 @@
 import dl
 
-def check_legit_stock(stock):
+def get_legit_stock(stock):
     return None
 
-def check_rumour_stock(stock):
+def get_rumour_stock(stock):
     return None
 
-def 
