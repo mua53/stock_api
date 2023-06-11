@@ -1,6 +1,6 @@
-import dl
 import os
-import call_api
+import utils.call_api as call_api
+import data.dl as dl
 
 def insert_stock():
     return None
@@ -82,8 +82,6 @@ def get_top_trading():
 def get_top_effect():
     return None
 
-def draw_index_career():
-    return None
 
 
 

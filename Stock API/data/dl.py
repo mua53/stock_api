@@ -7,7 +7,15 @@ db = client['stock']
 
 #Get data from db
 def get_data(collection, query, sort):
-    data = list(db[collection].find(query).sort(sort))
+    result = db[collection].find(query)
+    for data in result:
+        data['_id'] = str(data['_id'])
+    return list(data)
+
+def get_data_one(collection, query):
+    data = db[collection].find_one(query)
+    if data:
+        data['_id'] = str(data['_id'])
     return data
 
 def insert_data(collection, data):

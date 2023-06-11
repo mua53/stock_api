@@ -1,22 +1,30 @@
-from flask import Flask
-import bl
+from flask import Flask, Response
+from controller.stock_info_controller import stock_info
+from controller.chart_controller import charts
+from controller.fliter_controller import fliter
 import logging
+import json
 
 app = Flask(__name__)
 
-@app.route('/')
-def hello():
-    return "Hello, world!"
+app.register_blueprint(stock_info)
+app.register_blueprint(charts)
+app.register_blueprint(fliter)
 
-@app.route('/get_info_indicator_stock/<string:stockcode>')
-def get_info_indicator_stock(stockcode):
-    return bl.get_info_indicator_stock(stockcode)
 
-@app.route('/insert_info_career')
-def insert_info_career():
-    bl.insert_info_career()
-    return 'Success'
+@app.errorhandler(404)
+def page_not_found(e):
+    response = {
+        'message': 'NOT HAVE API',
+    }
+    return Response(json.dumps(response),status=404)
 
-@app.route('/get_market_price')
-def get_info_market():
-    return None
+@app.errorhandler(400)
+def error_404(e):
+    response = {
+        'message': 'Bad request'
+    }
+    return Response(response,status=404)
+
+if __name__ == '__main__':
+    app.run(port=5000)

@@ -1,4 +1,4 @@
-import dl
+import data.dl as dl
 
 def get_legit_stock(stock):
     return None

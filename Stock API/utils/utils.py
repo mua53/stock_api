@@ -1,3 +1,7 @@
+import json
+from bson import json_util
+
+
 def format_number_to_vnd(number):
     return 
 
@@ -9,4 +13,7 @@ def caculator_ma():
 
 def caculator_history():
     return
+
+def format_response(data):
+    return json.dumps(data, default=json_util.default)
 
