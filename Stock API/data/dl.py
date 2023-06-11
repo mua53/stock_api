@@ -12,6 +12,12 @@ def get_data(collection, query, sort):
         data['_id'] = str(data['_id'])
     return list(data)
 
+def get_data_limit(collection, query, sort, limit):
+    result = db[collection].find(query).sort(sort).limit(limit)
+    for data in result:
+        data['_id'] = str(data['_id'])
+    return list(data)
+
 def get_data_one(collection, query):
     data = db[collection].find_one(query)
     if data:
