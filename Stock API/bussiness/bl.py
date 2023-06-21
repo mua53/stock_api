@@ -1,6 +1,6 @@
 import os
 import utils.call_api as call_api
-import data.dl as dl
+from data.dl import dl_base
 
 def insert_stock():
     return None
@@ -35,7 +35,7 @@ def insert_info_career():
     data = get_info_career()
     for item in data:
         item['']
-    dl.insert_data('career',data)
+    dl_base.insert_data('career',data)
     
 def get_info_career():
     url = os.getenv('URL_VIETSTOCK') + "data/sectionindex"

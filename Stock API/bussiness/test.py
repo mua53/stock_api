@@ -10,12 +10,13 @@ import pymongo
 client = pymongo.MongoClient(os.getenv('URL_MONGODB'))
 db = client['stock']
 
-current_date = datetime.today().strftime('%d-%m-%Y')
+current_date = datetime.today().strftime('%d%m%Y')
 current_date_number = datetime.today().strftime('%Y%m%d')
-current_date_point = datetime.today().strftime('%d.%m.%d')
-current_date_point = '09.06.2023'
-# url = f'https://cafef1.mediacdn.vn/data/ami_data/{current_date_number}/CafeF.SolieuGD.Upto{current_date}.zip'
-url = f'https://cafef1.mediacdn.vn/data/ami_data/20230609/CafeF.SolieuGD.Upto09062023.zip'
+current_date_point = datetime.today().strftime('%d.%m.%Y')
+# current_date_point = '09.06.2023'
+url = f'https://cafef1.mediacdn.vn/data/ami_data/{current_date_number}/CafeF.SolieuGD.Upto{current_date}.zip'
+# url = f'https://cafef1.mediacdn.vn/data/ami_data/20230609/CafeF.SolieuGD.Upto09062023.zip'
+# https://cafef1.mediacdn.vn/data/ami_data/20230612/CafeF.SolieuGD.Upto12062023.zip
 
 response = wget.download(url, "data.zip")
 if response == 'data.zip':
@@ -59,3 +60,4 @@ data_upcom = pandas.read_csv(f'CafeF.UPCOM.Upto{current_date_point}.csv', sep=",
 data_json_upcom = data_upcom.to_dict('records')
 db.stock.insert_many(data_json_upcom)
 print("Done")
+
