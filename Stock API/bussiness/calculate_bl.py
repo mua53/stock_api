@@ -1,6 +1,8 @@
-import pandas 
-import numpy
-import math
+# import pandas 
+# import numpy
+# import math
+import polars_talib as pl_ta
+import polars as pl
 from data.calculate_dl import calculate_dl
 
 def calculate_sma(stock_code, length):
@@ -31,33 +33,29 @@ def calculate_update_technical_analysis():
     field = 'Ticker'
     list_stock_code = calculate_dl.get_distint('stock',field)
     calculate_dl.delete_many_data('indicators', {})
+    data = []
     for stock_code in list_stock_code:
-        query = {
-            'Ticker': stock_code
-        }
-        sort = [('DTYYYYMMDD', 1)]
-        data_records = calculate_dl.get_data('stock', query, sort)
-        data_frame = pandas.DataFrame.from_records(data_records)
-        data_frame = data_frame.drop(['_id'], axis=1)
-        #Calculate sma20 and take data
-        cma20 = data_frame['Close'].rolling(20).mean()
-        cma50 = data_frame['Close'].rolling(50).mean()
-        cma100 = data_frame['Close'].rolling(100).mean()
-        volumn = data_frame['Volume'].rolling(5).mean()
-        data_frame['Ma20'] = cma20
-        data_frame['Ma50'] = cma50
-        data_frame['Ma100'] = cma100
-        data_frame['Volume5'] = volumn
-        ema12 = data_frame['Close'].ewm(span=12, adjust=False, min_periods=12).mean()
-        ema26 = data_frame['Close'].ewm(span=26, adjust=False, min_periods=26).mean()
-        macd = ema12 - ema26
-        signal = macd.ewm(span=9, adjust=False, min_periods=9).mean()
-        his = macd - signal
-        data_frame['Macd'] = macd
-        data_frame['Signal'] =signal
-        data_frame['His'] = his
-        data_frame['MacdUp'] = macd.rolling(3).apply(lambda x: numpy.all(numpy.diff(x) > 0)).astype('boolean')
-        data_frame['HisUp'] = his.rolling(3).apply(lambda x: numpy.all(numpy.diff(x) > 0)).astype('boolean')
-        data_json = data_frame.to_dict('records')
-        calculate_dl.insert_data('indicators', data_json)
+        try:
+            print(stock_code)
+            query = {
+                'Ticker': stock_code
+            }
+            sort = [('DateTime', 1)]
+            data_records = calculate_dl.get_data('stock', query, sort)
+            data_frame = pl.DataFrame(data_records)
+            print(data_frame)
+            pl_ta.get_functions()
+            new_data = data_frame.with_columns(
+                pl.col("Close").ta.sma(20).alias("MA20"),
+                pl.col("Close").ta.sma(50).alias("MA50"),
+                pl.col("Close").ta.sma(100).alias("MA100"),
+                pl.col("Close").ta.macd(12, 26, 9).struct.field("macd"),
+                pl.col("Close").ta.macd(12, 26, 9).struct.field("macdsignal"),
+                pl.col("Close").ta.macd(12, 26, 9).struct.field("macdhist"),
+            )
+            data_json = new_data.to_dicts()
+            data = data + data_json
+        except Exception as e:
+            pass
+    calculate_dl.insert_data('indicators', data_json)
     return 'Success'

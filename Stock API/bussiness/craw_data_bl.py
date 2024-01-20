@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from zipfile import ZipFile
 import os
 import pandas
+import polars
 from data.dl import dl_base
 
 
@@ -19,14 +20,17 @@ def craw_data(current_date):
         if response == 'data.zip':
             unzip_and_read_file(yesterday_point)
             dl_base.delete_many_data('stock', {})
-            data_hnx = pandas.read_csv(f'CafeF.HNX.Upto{yesterday_point}.csv', sep=",")
-            data_json_hnx = data_hnx.to_dict('records')
+            data_hnx = polars.read_csv(f'CafeF.HNX.Upto{yesterday_point}.csv', separator=",")
+            data_hnx.columns = ['Ticker', 'DateTime', 'Open', 'High', 'Low', 'Close', 'Volume']
+            data_json_hnx = data_hnx.to_dicts()
             dl_base.insert_data('stock', data_json_hnx)
-            data_hose = pandas.read_csv(f'CafeF.HSX.Upto{yesterday_point}.csv', sep=",")
-            data_json_hose = data_hose.to_dict('records')
+            data_hose = polars.read_csv(f'CafeF.HSX.Upto{yesterday_point}.csv', separator=",")
+            data_hose.columns = ['Ticker', 'DateTime', 'Open', 'High', 'Low', 'Close', 'Volume']
+            data_json_hose = data_hose.to_dicts()
             dl_base.insert_data('stock', data_json_hose)
-            data_upcom = pandas.read_csv(f'CafeF.UPCOM.Upto{yesterday_point}.csv', sep=",")
-            data_json_upcom = data_upcom.to_dict('records')
+            data_upcom = polars.read_csv(f'CafeF.UPCOM.Upto{yesterday_point}.csv', separator=",")
+            data_upcom.columns = ['Ticker', 'DateTime', 'Open', 'High', 'Low', 'Close', 'Volume']
+            data_json_upcom = data_upcom.to_dicts()
             dl_base.insert_data('stock', data_json_upcom)
     except Exception as e:
         print(e)
