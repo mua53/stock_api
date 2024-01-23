@@ -1,63 +1,77 @@
-import requests
+import numpy as np
+import pandas as pd
+import polars as pl
 from datetime import datetime
-import wget
-from zipfile import ZipFile
-import os
-import pandas
-import pymongo
 
+
+def MACD_Strategy(df, risk):
+    MACD_Buy=[]
+    MACD_Sell=[]
+    position=False
+    current_ticker = ''
+    new_ticker = True
+    for i in range(0, len(df)):
+        if current_ticker !=  df['Ticker'][i]:
+            new_ticker = True
+            current_ticker = df['Ticker'][i]
+        else:
+            new_ticker = False
+        if i == 0 or new_ticker:
+            MACD_Buy.append(np.nan)
+            MACD_Sell.append(np.nan)
+        else:
+            if df['macdhist'][i] > 0 and df['macdhist'][i-1] <= 0:
+                MACD_Sell.append(np.nan)
+                if position ==False:
+                    MACD_Buy.append(df['Close'][i])
+                    position=True
+                else:
+                    MACD_Buy.append(np.nan)
+            elif df['macdhist'][i] < 0 and df['macdhist'][i-1] >= 0:
+                MACD_Buy.append(np.nan)
+                if position == True:
+                    MACD_Sell.append(df['Close'][i])
+                    position=False
+                else:
+                    MACD_Sell.append(np.nan)
+            else:
+                MACD_Buy.append(np.nan)
+                MACD_Sell.append(np.nan)
+    return MACD_Buy, MACD_Sell
+    # print(MACD_Buy)
+    # print(MACD_Sell)
+
+#Data Layer
+import os
+import pymongo
 
 client = pymongo.MongoClient(os.getenv('URL_MONGODB'))
 db = client['stock']
 
-current_date = datetime.today().strftime('%d%m%Y')
-current_date_number = datetime.today().strftime('%Y%m%d')
-current_date_point = datetime.today().strftime('%d.%m.%Y')
-# current_date_point = '09.06.2023'
-url = f'https://cafef1.mediacdn.vn/data/ami_data/{current_date_number}/CafeF.SolieuGD.Upto{current_date}.zip'
-# url = f'https://cafef1.mediacdn.vn/data/ami_data/20230609/CafeF.SolieuGD.Upto09062023.zip'
-# https://cafef1.mediacdn.vn/data/ami_data/20230612/CafeF.SolieuGD.Upto12062023.zip
+list_json = list(db['indicators'].find({'Ticker':'VPB'}))
 
-response = wget.download(url, "data.zip")
-if response == 'data.zip':
-    with ZipFile('data.zip', 'r') as zObject:
-        zObject.extractall()
-if os.path.exists("data.zip"):
-    os.remove("data.zip")
+def get_list_macd_signal_buy(date_before=3):
+    # date_query = date_before + 1
+    current_Date = datetime.now()
+    current_date_number = current_Date.year * 10000 + current_Date.month * 100 + current_Date.day
+    date_query = current_date_number - date_before - 2
+    list_data = list(db['indicators'].find({'DateTime': {
+        '$gte': date_query
+    }}).sort([['Ticker', 1],('DateTime', 1)]))
+    # print(list_data)
+    df = pl.DataFrame(list_data)
+    macd_buy, macd_sell = MACD_Strategy(df, 0.025)
+    new_df = df.select(
+        pl.col("Ticker"),
+        pl.col("DateTime"),
+        pl.Series('macd_buy', macd_buy),
+        pl.Series('macd_sell', macd_sell),
+    ).filter(pl.col('macd_buy') != np.nan)
+    # df['macd_buy'] = macd_buy
+    # df['macd_sell'] = macd_sell
+    print(new_df)
 
-fin = open(f"CafeF.HNX.Upto{current_date_point}.csv", "rt")
-data = fin.read()
-data = data.replace('<', '').replace('>', '')
-fin.close()
-fin = open(f"CafeF.HNX.Upto{current_date_point}.csv", "wt")
-fin.write(data)
-fin.close()
+get_list_macd_signal_buy()
 
-fin = open(f"CafeF.HSX.Upto{current_date_point}.csv", "rt")
-data = fin.read()
-data = data.replace('<', '').replace('>', '')
-fin.close()
-fin = open(f"CafeF.HSX.Upto{current_date_point}.csv", "wt")
-fin.write(data)
-fin.close()
-
-fin = open(f"CafeF.UPCOM.Upto{current_date_point}.csv", "rt")
-data = fin.read()
-data = data.replace('<', '').replace('>', '')
-fin.close()
-fin = open(f"CafeF.UPCOM.Upto{current_date_point}.csv", "wt")
-fin.write(data)
-fin.close()
-
-db.stock.delete_many({})
-data_hnx = pandas.read_csv(f'CafeF.HNX.Upto{current_date_point}.csv', sep=",")
-data_json_hnx = data_hnx.to_dict('records')
-db.stock.insert_many(data_json_hnx)
-data_hose = pandas.read_csv(f'CafeF.HSX.Upto{current_date_point}.csv', sep=",")
-data_json_hose = data_hose.to_dict('records')
-db.stock.insert_many(data_json_hose)
-data_upcom = pandas.read_csv(f'CafeF.UPCOM.Upto{current_date_point}.csv', sep=",")
-data_json_upcom = data_upcom.to_dict('records')
-db.stock.insert_many(data_json_upcom)
-print("Done")
-
+# df = pd.DataFrame(list_json)
+# MACD_Strategy(df, 0.025)

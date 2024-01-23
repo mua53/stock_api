@@ -14,8 +14,9 @@ def update_technical_analysis():
     calculate_bl.calculate_update_technical_analysis()
     return Response(None)
 
-@fliter.route('/find-stock-by-macd', methods=['GET'])
-def find_stock_by_macd():
-    data = fliter_bl.get_stock_by_macd()
+@fliter.route('/find-stock-by-macd/<day_before>', methods=['GET'])
+def find_stock_by_macd(day_before):
+    day_before = int(day_before)
+    data = fliter_bl.get_stock_by_macd(day_before)
     response = Common.format_response(data)
     return Response(response=response, mimetype="application/json", status=200)

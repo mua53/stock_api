@@ -10,3 +10,6 @@ class calculate_dl(dl_base):
     def get_distint(collection, field):
         result = db[collection].distinct(field)
         return result
+    
+    def drop(collection):
+        db[collection].drop()
