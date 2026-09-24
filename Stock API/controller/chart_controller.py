@@ -1,4 +1,4 @@
-from flask import Blueprint
+from fastapi import APIRouter
 import bussiness.bl as bl
 
-charts = Blueprint('charts', __name__, url_prefix='/charts')
+charts = APIRouter(prefix="/charts", tags=["charts"])

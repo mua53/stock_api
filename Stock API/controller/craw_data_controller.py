@@ -1,10 +1,12 @@
-from flask import Blueprint, request, Response
-from bussiness import craw_data_bl
 from datetime import datetime
 
-craw_data = Blueprint('craw_data', __name__, url_prefix='/craw')
+from fastapi import APIRouter, Response
+from bussiness import craw_data_bl
 
-@craw_data.route('/craw-data', methods=['GET'])
+craw_data = APIRouter(prefix="/craw", tags=["craw"])
+
+
+@craw_data.get("/craw-data")
 def craw_data_cafef():
     craw_data_bl.craw_data(datetime.now())
-    return 'Success'
+    return Response(content="Success", media_type="text/plain")

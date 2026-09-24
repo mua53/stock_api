@@ -1,22 +1,24 @@
-from flask import Blueprint, Response
+from fastapi import APIRouter, Response
 import bussiness.calculate_bl as calculate_bl
 import bussiness.fliter_bl as fliter_bl
 from utils.utils import Common
 
-fliter = Blueprint('fliter', __name__, url_prefix='/fliter')
+fliter = APIRouter(prefix="/fliter", tags=["fliter"])
 
-@fliter.route('/stock-will-up', methods=['GET'])
+
+@fliter.get("/stock-will-up")
 def get_stock_will_up():
     return None
 
-@fliter.route('/update-technical-analysis', methods=['GET'])
+
+@fliter.get("/update-technical-analysis")
 def update_technical_analysis():
     calculate_bl.calculate_update_technical_analysis()
-    return Response(None)
+    return Response(content=None)
 
-@fliter.route('/find-stock-by-macd/<day_before>', methods=['GET'])
-def find_stock_by_macd(day_before):
-    day_before = int(day_before)
+
+@fliter.get("/find-stock-by-macd/{day_before}")
+def find_stock_by_macd(day_before: int):
     data = fliter_bl.get_stock_by_macd(day_before)
     response = Common.format_response(data)
-    return Response(response=response, mimetype="application/json", status=200)
+    return Response(content=response, media_type="application/json", status_code=200)

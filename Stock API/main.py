@@ -1,32 +1,36 @@
-from flask import Flask, Response
+import json
+
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse, Response
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 from controller.stock_info_controller import stock_info
 from controller.chart_controller import charts
 from controller.fliter_controller import fliter
 from controller.craw_data_controller import craw_data
-import logging
-import json
 
-app = Flask(__name__)
+app = FastAPI()
 
-app.register_blueprint(stock_info)
-app.register_blueprint(charts)
-app.register_blueprint(fliter)
-app.register_blueprint(craw_data)
+app.include_router(stock_info)
+app.include_router(charts)
+app.include_router(fliter)
+app.include_router(craw_data)
 
 
-@app.errorhandler(404)
-def page_not_found(e):
-    response = {
-        'message': 'NOT HAVE API',
-    }
-    return Response(json.dumps(response),status=404)
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        return Response(
+            content=json.dumps({"message": "NOT HAVE API"}),
+            status_code=404,
+            media_type="application/json",
+        )
+    if exc.status_code == 400:
+        return JSONResponse(status_code=404, content={"message": "Bad request"})
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
-@app.errorhandler(400)
-def error_404(e):
-    response = {
-        'message': 'Bad request'
-    }
-    return Response(response,status=404)
 
-if __name__ == '__main__':
-    app.run(port=5000)
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("main:app", host="127.0.0.1", port=5000, reload=True)

@@ -1,9 +1,10 @@
 import json
 from bson import json_util
 
-class Common():
+
+class Common:
     def format_number_to_vnd(number):
-        return 
+        return
 
     def caculator_macd():
         return
@@ -16,4 +17,3 @@ class Common():
 
     def format_response(data):
         return json.dumps(data, default=json_util.default)
-
